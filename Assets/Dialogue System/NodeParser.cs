@@ -7,6 +7,7 @@ using TMPro;
 public class NodeParser : MonoBehaviour
 {
     [SerializeField] DialogueGraph graph;
+    [SerializeField] float typingSpeed = 0.05f;
     Coroutine _parser;
 
     int choiceIndex = -1;
@@ -14,10 +15,17 @@ public class NodeParser : MonoBehaviour
     [SerializeField] TextMeshProUGUI speakerNameText;
     [SerializeField] TextMeshProUGUI dialogueText;
     [SerializeField] Image speakerImage;
+    [SerializeField] Image backgroundImage;
     [SerializeField] Transform choicePrefab;
     [SerializeField] Transform choiceContainer;
     [SerializeField] GameObject choiceParent;
+    [SerializeField] GameObject nameParent;
+    [SerializeField] GameObject dialogParent;
+    [SerializeField] Animator anim;
+    [SerializeField] AudioManager am;
 
+    string currentText;
+    bool isTyping = false;
 
     private void Awake()
     {
@@ -39,6 +47,14 @@ public class NodeParser : MonoBehaviour
         _parser = StartCoroutine(ParseNode());
     }
 
+    void Update(){
+        if(isTyping && Input.GetKeyDown(KeyCode.Return)){
+            dialogueText.text = currentText;
+            isTyping = false;
+            StopCoroutine(TypeText(currentText));
+        }
+    }
+
     IEnumerator ParseNode()
     {
         BaseNode b = graph.current;
@@ -51,16 +67,32 @@ public class NodeParser : MonoBehaviour
                 NextNode("exit");
                 break;
             case "DialogueNode":
-                speakerNameText.text = dataParts[1]; //toggle which bar/sprite is visible
-                dialogueText.text = dataParts[2]; //add typewriter effect
-                speakerImage.sprite = b.GetSprite();
+                dialogParent.SetActive(true);
+                speakerImage.gameObject.SetActive(true);
+                nameParent.SetActive(true);
+                if(dataParts[1] != ""){
+                    speakerNameText.text = dataParts[1];
+                }
+                else{
+                    nameParent.SetActive(false);
+                }
+                currentText = dataParts[2];
+                StartCoroutine(TypeText(dataParts[2]));
+                if(b.GetSprite() != null){
+                    speakerImage.sprite = b.GetSprite(); 
+                }
+                else{
+                    speakerImage.gameObject.SetActive(false);
+                }
+                
+                backgroundImage.sprite = b.GetBackground();
 
-                yield return new WaitUntil(() => Input.GetMouseButtonDown(0));
-                yield return new WaitUntil(() => Input.GetMouseButtonUp(0)); 
-
+                yield return new WaitUntil(() => Input.GetMouseButtonDown(0) && !isTyping); 
                 NextNode("exit");
                 break;
             case "ChoiceNode":
+                dialogParent.SetActive(true);
+                speakerImage.gameObject.SetActive(true);
                 Choice[] choices = b.GetChoices();
 
                 ClearChoices();
@@ -79,7 +111,39 @@ public class NodeParser : MonoBehaviour
                 NextNode("exit " + choiceIndex);
 
                 break;
+            case "BlankNode":
+                dialogParent.SetActive(false);
+                speakerImage.gameObject.SetActive(false);
+                backgroundImage.sprite = b.GetBackground();
+                yield return new WaitForSeconds(2f);
+                NextNode("exit");
+                break;
+            case "FadeNode":
+                anim.SetTrigger("transition");
+                yield return new WaitForSeconds(1.1f);
+                NextNode("exit");
+                break;
+            case "AudioNode":
+                am.PlaySound(b.GetSoundName());
+                NextNode("exit");
+                break;
+            case "Exit":
+                NextGraph();
+                break;
         }
+    }
+
+    IEnumerator TypeText(string text)
+    {
+        isTyping = true;
+        string currentText = "";
+        for (int i = 0; i <= text.Length && isTyping; i++)
+        {
+            currentText = text.Substring(0, i);
+            dialogueText.text = currentText;
+            yield return new WaitForSeconds(typingSpeed);
+        }
+        isTyping = false;
     }
 
     public void NextNode(string fieldName)
@@ -92,6 +156,23 @@ public class NodeParser : MonoBehaviour
         }
 
         graph.current = graph.current.GetOutputPort(fieldName).Connection.node as BaseNode;
+        _parser = StartCoroutine(ParseNode());
+    }
+
+    public void NextGraph(){
+        if (_parser != null)
+        {
+            StopCoroutine(_parser);
+            _parser = null;
+        }
+        foreach(BaseNode b in graph.nodes)
+                {
+                if(b.GetString() == "Start")
+                {
+                    graph.current = b;
+                    break;
+                }
+        }
         _parser = StartCoroutine(ParseNode());
     }
 

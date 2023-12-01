@@ -10,12 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6232f23615a46ed49a622ef017e8c098, type: 3}
-  m_Name: Griswold
+  m_Name: Narration
   m_EditorClassIdentifier: 
-  characterName: Griswold
+  characterName: 
   emotion: 0
   sprites:
-  - {fileID: 21300000, guid: c9f4cb0d6bf1e8e428ea6e45a303e505, type: 3}
-  - {fileID: 21300000, guid: c9f4cb0d6bf1e8e428ea6e45a303e505, type: 3}
-  - {fileID: 21300000, guid: c9f4cb0d6bf1e8e428ea6e45a303e505, type: 3}
-  - {fileID: 21300000, guid: c9f4cb0d6bf1e8e428ea6e45a303e505, type: 3}
+  - {fileID: 0}

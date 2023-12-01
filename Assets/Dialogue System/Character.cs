@@ -9,7 +9,7 @@ public class Character : ScriptableObject
     [SerializeField] public string characterName;
 
     [SerializeField] Emotions emotion = Emotions.Neutral;
-    [SerializeField] Sprite[] sprites = new Sprite[4];
+    [SerializeField] Sprite[] sprites = new Sprite[5];
 
     public Sprite GetSprite(Emotions _emotion)
     {
@@ -25,7 +25,8 @@ public class Character : ScriptableObject
 public enum Emotions
 {
     Neutral,
-    Happy,
-    Sad,
-    Angry
+    Cheerful,
+    Flattered,
+    Angered,
+    Concerned
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using XNode;
 
 public class DialogueNode : BaseNode
@@ -9,6 +10,8 @@ public class DialogueNode : BaseNode
     [Output] public int exit;
 
     public Character speaker;
+    public Emotions emotion;
+    public Sprite background;
     [TextArea(10,10)]public string dialogueLine;
 
     public override string GetString()
@@ -18,8 +21,19 @@ public class DialogueNode : BaseNode
 
     public override Sprite GetSprite()
     {
-        return speaker.GetSprite();
+        return speaker.GetSprite(emotion);
     }
+
+    public override Emotions GetEmotion()
+    {
+        return emotion;
+    }
+
+    public override Sprite GetBackground()
+    {
+        return background;
+    }
+
 
     public override object GetValue(NodePort port)
     {
